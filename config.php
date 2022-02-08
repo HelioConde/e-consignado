@@ -1,8 +1,8 @@
 <?php
     $servidor = "localhost";
-    $usuario = "id17623303_bancl4";
-    $senha = "182182654y!Y";
-    $dbname = "id17623303_l4banc";
+    $usuario = "";
+    $senha = "";
+    $dbname = "";
 
     $conn = mysqli_connect($servidor, $usuario, $senha, $dbname);
     mysqli_set_charset($conn,"utf8");
