@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+    <HTML>
+     <HEAD>
+      <TITLE></TITLE>
+     <META http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <META http-equiv="Expires" content="Fri, Jan 01 1900 00:00:00 GMT"/>      <META http-equiv="Pragma" content="no-cache"/>
+      <link rel="shortcut icon" href="../_lib/img/scriptcase__NM__ico__NM__favicon.ico">
+      <link rel="stylesheet" type="text/css" href="../_lib/css/_menuH.css" /> 
+      <link rel="stylesheet" type="text/css" href="../_lib/css/_menuHLTR.css" /> 
+      <link rel="stylesheet" type="text/css" href="../_lib/css/Sc9_Rhino/Sc9_Rhino_grid.css" /> 
+      <link rel="stylesheet" type="text/css" href="../_lib/css/Sc9_Rhino/Sc9_Rhino_gridLTR.css" /> 
+     </HEAD>
+     <body>
+       <table align="center" class="scGridBorder"><tr><td style="padding: 0">
+       <table style="width: 100%" class="scGridTabela"><tr class="scGridFieldOdd"><td class="scGridFieldOddFont" style="padding: 15px 30px; text-align: center">
+        Usuário não autorizado        <br />
+        <form name="Fseg" method="post" target="_self">
+         <input type="hidden" name="script_case_init" value=""/> 
+         <input type="button" name="sc_sai_seg" value="OK" onclick="nm_saida()"> 
+        </form> 
+       </td></tr></table>
+       </td></tr></table>
+     </body>
+         <script type="text/javascript">
+      function nm_saida()
+      {
+history.back(); 
+      }
+     </script> 

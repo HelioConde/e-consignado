@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L4</title>
+    <script src="/js/jquery.js"></script>
+    <script src="/js/brb.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <!--==================== BACKGROUND ====================-->
+    <div id="background">
+        <div id='stars'></div>
+        <div id='stars2'></div>
+        <div id='stars3'></div>
+    </div>
+    <!--==================== HEADER ========================-->
+    <header class="header scroll-header" id="header">
+        <nav class="nav container">
+            <a href="../" class="nav__logo">
+                L4
+            </a>
+
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="devedor.html" class="nav__link">Saldo devedor</a>
+                    </li>
+
+                    <li class="nav__item dropdown">
+                        <a  class="nav__link">Valor liberado <i class="fas fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                           <a href="brb.html">BRB</a>
+                            <a href="inbursa.html">INBURSA</a>
+                            <a href="sabemi.html">SABEMI</a>
+                        </div>
+                    </li>
+                    <li class="nav__item dropdown">
+                        <a  class="nav__link active-link">Suporte <i class="fas fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="taxa.html">TAXA</a>
+                            <a href="roteiro.html">ROTEIRO</a>
+                            <a href="mega.html" class="active-l">MEGA CLIENTES</a>
+                        </div>
+                    </li>
+
+                    <a href="acesso.html" class="button" id="button--ghost">ACESSO</a>
+                </ul>
+
+                <div class="nav__close" id="nav-close">
+                    <i class="bx bx-x"></i>
+                </div>
+            </div>
+
+            <div class="nav__toggle" id="nav-toggle">
+                <i class="bx bx-grid-alt"></i>
+            </div>
+
+        </nav>
+    </header>
+    <!--==================== MAIN ====================-->
+    <main>
+        <div class="devedor">
+            <div class="box1">
+                <header style="text-align: center;">
+                    <div class="box-mega">
+                        <a id="0" href="view.php?nome=Virna"><button class="btn"
+                                style="margin: 10px;cursor: pointer;">Virna</button></a>
+                    </div>
+                    <div class="box-mega">
+                        <a id="1" href="view.php?nome=Miller"><button class="btn"
+                                style="margin: 10px;cursor: pointer;">Miller</button></a>
+                    </div>
+                    <div class="box-mega">
+                        <a id="2" href="view.php?nome=Luis"><button class="btn"
+                                style="margin: 10px;cursor: pointer;">Luis</button></a>
+                    </div>
+                    <div class="box-mega">
+                        <a id="3" href="view.php?nome=Kethell"><button class="btn"
+                                style="margin: 10px;cursor: pointer;">Kethell</button></a>
+                    </div>
+                    <div class="box-mega">
+                        <a id="4" href="view.php?nome=Francisco"><button class="btn"
+                                style="margin: 10px;cursor: pointer;">Francisco</button></a>
+                    </div>
+                    <div class="box-mega">
+                        <a id="5" href="view.php?nome=Mendes"><button class="btn"
+                                style="margin: 10px;cursor: pointer;">Mendes</button></a>
+                    </div>
+                    <div id="resultado">
+                    </div>
+                    <br>
+                    <textarea id="textView" name="textView" rows="12" cols="80"
+                        placeholder="Texto pronto para Whatsapp"></textarea>
+                    <br>
+                    <br>
+                    <button class="btn" onmouseup="saveText()" onmouseup="calcular()">Confirma</button>
+                    <br>
+                    <br>
+                    comandos:<br>*n* = nome do cliente.<br>*d* = Saudação "Bom dia", "Boa tarde" ou "Boa Noite".
+                </header>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
