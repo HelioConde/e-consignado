@@ -12,5 +12,3 @@ Esse site foi desenvolvido para ajudar com emprestimo consignado ajudando a faze
 
 ## Amarzem de informações de cliente via extenção
 <p align="center"><img src="https://github.com/HelioConde/e-consignado/blob/main/img/index4.png" width="400"></p>
-
-<p align="center"><img src="https://github.com/HelioConde/e-consignado/blob/main/img/index5.png" width="400"></p>
