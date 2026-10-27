@@ -4,16 +4,18 @@ import { addSaved, clearSaved, listSaved, removeSaved } from './storage'
 import type { Saved } from './storage'
 import { brl, inferRate, parseBR, pct, remainingBalance, simulate } from './finance'
 import { parseScenarioCSV, exportScenarioResults } from './csv'
+import { BrandMark, NavIcon } from './components/NavIcons'
+import type { NavIconName } from './components/NavIcons'
 import type { Loan, Params } from './finance'
 
 type Route = 'inicio' | 'simuladores' | 'taxas' | 'comparacao' | 'ferramentas' | 'ajuda'
-const routes: { id: Route; label: string; icon: string }[] = [
-  { id: 'inicio', label: 'Visão geral', icon: '◫' },
-  { id: 'simuladores', label: 'Simuladores', icon: '▦' },
-  { id: 'taxas', label: 'Descobrir taxa', icon: '%' },
-  { id: 'comparacao', label: 'Comparar', icon: '⇄' },
-  { id: 'ferramentas', label: 'Ferramentas', icon: '▤' },
-  { id: 'ajuda', label: 'Ajuda', icon: '?' },
+const routes: { id: Route; label: string; icon: NavIconName }[] = [
+  { id: 'inicio', label: 'Visão geral', icon: 'overview' },
+  { id: 'simuladores', label: 'Simuladores', icon: 'calculator' },
+  { id: 'taxas', label: 'Descobrir taxa', icon: 'percent' },
+  { id: 'comparacao', label: 'Comparar', icon: 'compare' },
+  { id: 'ferramentas', label: 'Ferramentas', icon: 'tools' },
+  { id: 'ajuda', label: 'Ajuda', icon: 'help' },
 ]
 function fromHash(): Route {
   const key = window.location.hash.replace(/^#\/?/, '')
@@ -178,13 +180,13 @@ export default function App() {
     <a className="skip" href="#conteudo">Pular para o conteúdo</a>
     {menu&&<button className="scrim" aria-label="Fechar menu" onClick={()=>setMenu(false)} />}
     <aside className={'sidebar'+(menu?' open':'')} id="menu-principal" aria-label="Menu principal">
-      <a className="brand" href="#/inicio"><span className="mark">e<span>.</span></span><span>e-Consignado<small>Laboratório financeiro</small></span></a>
+      <a className="brand" href="#/inicio"><span className="mark"><BrandMark /></span><span>e-Consignado<small>Laboratório financeiro</small></span></a>
       <p className="menu-label">MENU PRINCIPAL</p>
-      <nav aria-label="Navegação principal">{routes.map(item=><a key={item.id} href={'#/'+item.id} aria-current={route===item.id?'page':undefined} className={'nav-link'+(route===item.id?' active':'')}><span aria-hidden="true">{item.icon}</span>{item.label}</a>)}</nav>
-      <div className="sidebar-foot"><span aria-hidden="true">◇</span><strong>Privacidade primeiro</strong><p>Simulações executadas no navegador, sem conta nem servidor de dados.</p><small>● Aplicação educativa</small></div>
+      <nav aria-label="Navegação principal">{routes.map(item=><a key={item.id} href={'#/'+item.id} aria-current={route===item.id?'page':undefined} className={'nav-link'+(route===item.id?' active':'')}><span className="nav-icon"><NavIcon name={item.icon} /></span><span className="nav-label">{item.label}</span></a>)}</nav>
+      <div className="sidebar-foot"><span className="sidebar-privacy-icon"><NavIcon name="shield" size={22} /></span><strong>Privacidade primeiro</strong><p>Simulações executadas no navegador, sem conta nem servidor de dados.</p><small>● Aplicação educativa</small></div>
     </aside>
     <div className="main-area">
-      <header className="topbar"><button className="menu-trigger" aria-label={menu?'Fechar menu':'Abrir menu'} aria-controls="menu-principal" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}>☰</button><span className="breadcrumb">Laboratório <b aria-hidden="true">/</b> <strong>{current.label}</strong></span><span className="top-badge">DEMONSTRAÇÃO EDUCATIVA</span></header>
+      <header className="topbar"><button className="menu-trigger" aria-label={menu?'Fechar menu':'Abrir menu'} aria-controls="menu-principal" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}><NavIcon name={menu?"close":"menu"} size={21} /></button><span className="breadcrumb">Laboratório <b aria-hidden="true">/</b> <strong>{current.label}</strong></span><span className="top-badge">DEMONSTRAÇÃO EDUCATIVA</span></header>
       <main id="conteudo" className="content" tabIndex={-1} aria-label={current.label}>
         {route==='inicio'&&<>
           <div className="hero">

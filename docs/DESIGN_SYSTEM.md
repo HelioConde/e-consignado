@@ -56,3 +56,14 @@ Tokens definidos em \`src/polish.css\` e aplicados sobre a base original \`src/s
 - **Feedback:** comunicar quantas linhas CSV foram validadas ou rejeitadas; indicar erros de esquema sem expor dados do arquivo.
 - **Responsividade:** área de ações do histórico quebra em telas estreitas, botão principal ocupa toda a largura no celular, tabelas têm rolagem interna.
 - **QA:** executar \`e2e/workflows.spec.ts\` junto às 36 capturas Playwright já existentes. Cobrir estado pendente, salvar/carregar/excluir, CSV válido/inválido e JSON numérico/com campo pessoal.
+
+
+## Identidade da navbar — ícones SVG
+
+- Os seis destinos usam ícones do mesmo conjunto SVG interno em \`src/components/NavIcons.tsx\`, com grade de **24×24**, stroke \`1.8\`, pontas e junções arredondadas.
+- Visão geral: quatro painéis; Simuladores: calculadora; Taxas: porcentagem; Comparar: setas bidirecionais; Ferramentas: maleta; Ajuda: interrogação em círculo.
+- A área de cada ícone mede **32×32px**, com gráfico de **20×20px**. O estado ativo realça o fundo e preserva o rótulo textual acessível.
+- A marca lateral e \`public/icon.svg\` têm o mesmo desenho vetorial geométrico verde-água, sem dependência de tipografia para renderização.
+- O botão mobile usa ícones menu/fechar, rótulos ARIA e \`aria-expanded\`, preservando as interações de teclado e Escape.
+- Preferência de movimento reduzido elimina transições dispensáveis.
+- Playwright em \`e2e/navbar.spec.ts\` valida os seis SVGs e tamanhos, a seleção das páginas, o favicon e o menu de 320 a 768px.
