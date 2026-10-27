@@ -183,3 +183,7 @@ tbody tr:hover{background:rgba(102,236,210,.07)}
  .compare-insight{background:white;border-color:#aaa;color:#111}
  .compare-insight strong{color:#111}
 }
+/* Mobile table affordance and CTA visual spacing */
+.hero .actions .primary span{margin-left:8px}
+.table-scroll-hint{display:none}
+@media(max-width:580px){.table-scroll-hint{display:block;color:#c5d8e5;font-size:11px;margin:0 0 12px}}
