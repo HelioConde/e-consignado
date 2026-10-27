@@ -53,6 +53,6 @@ test('menu mobile abre e fecha sem impedir navegação',async({page})=>{
   await page.goto('./#/inicio')
   await page.getByRole('button',{name:'Abrir menu'}).click()
   await expect(page.locator('.menu-trigger')).toHaveAttribute('aria-expanded','true')
-  await page.getByRole('link',{name:/Descobrir taxa/}).click()
+  await page.locator('.sidebar nav a[href="#/taxas"]').click({timeout:8000})
   await expect(page.getByRole('heading',{name:'Descubra a taxa implícita'})).toBeVisible()
 })
