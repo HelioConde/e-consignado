@@ -47,3 +47,12 @@ Tokens definidos em \`src/polish.css\` e aplicados sobre a base original \`src/s
 - Não pedir CPF nem armazenar dados pessoais; histórico apenas numérico no navegador.
 - Não substituir validação das fórmulas por efeitos visuais.
 - Em mudanças futuras, revisar desktop e 320px após modificar componentes financeiros.
+
+## Fluxos UX/UI 3.2
+
+- **Estado pendente:** editar qualquer parâmetro do simulador indica que o valor mostrado é anterior; é obrigatório recalcular antes de salvar. O botão de salvar é desabilitado nesse estado.
+- **Histórico recuperável:** cada cartão numérico oferece Reutilizar e Excluir, com confirmação para apagar tudo. Mostrar quantidade armazenada e um estado vazio com instrução.
+- **Importação/Exportação local:** JSON histórico estritamente validado, com máximo de 50 itens, e confirmação para persistência; CSV de até 500 linhas com esquema numérico fixo, prévia e exportação de resultados.
+- **Feedback:** comunicar quantas linhas CSV foram validadas ou rejeitadas; indicar erros de esquema sem expor dados do arquivo.
+- **Responsividade:** área de ações do histórico quebra em telas estreitas, botão principal ocupa toda a largura no celular, tabelas têm rolagem interna.
+- **QA:** executar \`e2e/workflows.spec.ts\` junto às 36 capturas Playwright já existentes. Cobrir estado pendente, salvar/carregar/excluir, CSV válido/inválido e JSON numérico/com campo pessoal.

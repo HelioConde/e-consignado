@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, ChangeEvent } from 'react'
 import { addSaved, clearSaved, listSaved, removeSaved } from './storage'
 import type { Saved } from './storage'
-import { brl, inferRate, installment, parseBR, pct, remainingBalance, simulate } from './finance'
+import { brl, inferRate, parseBR, pct, remainingBalance, simulate } from './finance'
+import { parseScenarioCSV, exportScenarioResults } from './csv'
 import type { Loan, Params } from './finance'
 
 type Route = 'inicio' | 'simuladores' | 'taxas' | 'comparacao' | 'ferramentas' | 'ajuda'
@@ -43,6 +44,7 @@ export default function App() {
   const [route, setRoute] = useState<Route>(fromHash)
   const [menu,setMenu] = useState(false)
   const [compareSpread,setCompareSpread] = useState(0.4)
+  const [dirty,setDirty] = useState(false)
   const [principal,setPrincipal] = useState('15.000')
   const [rate,setRate] = useState('1,80')
   const [months,setMonths] = useState('36')
@@ -60,9 +62,11 @@ export default function App() {
   const [records,setRecords] = useState<Saved[]>([])
   const [toolMessage,setToolMessage] = useState('')
   const [csvRows,setCsvRows] = useState(0)
+  const [csvRejected,setCsvRejected] = useState(0)
+  const [csvPreview,setCsvPreview] = useState<Loan[]>([])
 
   useEffect(()=>{
-    function sync() { setRoute(fromHash()); setMenu(false); setMessage(''); window.scrollTo(0,0) }
+    function sync() { const next=fromHash(); setRoute(next); setMenu(false); setMessage(prev=>next==='simuladores'&&prev==='Simulação restaurada do histórico local.'?prev:''); window.scrollTo(0,0) }
     window.addEventListener('hashchange',sync)
     if(!window.location.hash) window.history.replaceState(null,'','#/inicio')
     return ()=>window.removeEventListener('hashchange',sync)
@@ -81,7 +85,7 @@ export default function App() {
     try{
       const params:Params={principal:parseBR(principal),rate:parseBR(rate)/100,months:Number(months)}
       const result=simulate(params)
-      setLoan(result);setAllRows(false);setMessage('Simulação atualizada. Valores ilustrativos.')
+      setLoan(result);setAllRows(false);setDirty(false);setMessage('Simulação atualizada. Valores ilustrativos.')
     }catch(err){setMessage(err instanceof Error?err.message:'Dados inválidos')}
   }
   function onInfer(e:FormEvent){
@@ -96,10 +100,30 @@ export default function App() {
   }
   async function saveCurrent(){
     if(!loan)return
-    try{await addSaved({principal:loan.principal,rate:loan.rate,months:loan.months});setToolMessage('Cenário numérico salvo apenas neste navegador.');setRecords(await listSaved())}
-    catch{setToolMessage('Não foi possível salvar neste navegador.')}
+    if(dirty){setMessage('Recalcule os valores editados antes de salvar.');setToolMessage('Recalcule sua simulação antes de salvar.');return}
+    try{
+      const existing=await listSaved()
+      if(existing.length>=50){setMessage('Limite de 50 simulações salvas. Exclua um registro para continuar.');setToolMessage('Limite de 50 registros. Exclua um antes de salvar.');return}
+      await addSaved({principal:loan.principal,rate:loan.rate,months:loan.months})
+      setRecords(await listSaved())
+      setMessage('Simulação salva apenas neste navegador.')
+      setToolMessage('Cenário numérico salvo neste navegador.')
+    }catch{setMessage('Não foi possível salvar neste navegador.');setToolMessage('Não foi possível salvar neste navegador.')}
   }
-  async function erase(id:string) {
+  function restoreSaved(item:Saved){
+    try{
+      const result=simulate({principal:item.principal,rate:item.rate,months:item.months})
+      setPrincipal(new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(item.principal))
+      setRate((item.rate*100).toFixed(2).replace('.',','))
+      setMonths(String(item.months))
+      setLoan(result)
+      setDirty(false)
+      setAllRows(false)
+      setMessage('Simulação restaurada do histórico local.')
+      window.location.hash='#/simuladores'
+    }catch{setToolMessage('Não foi possível abrir esse registro.')}
+  }
+  async function erase(id:string){
     try{await removeSaved(id);setRecords(await listSaved());setToolMessage('Registro excluído.')}
     catch{setToolMessage('Falha ao excluir registro.')}
   }
@@ -108,23 +132,45 @@ export default function App() {
     try{await clearSaved();setRecords([]);setToolMessage('Histórico local apagado.')}
     catch{setToolMessage('Falha ao apagar histórico.')}
   }
+  async function readJSON(event:ChangeEvent<HTMLInputElement>){
+    const file=event.target.files?.[0]
+    if(!file)return
+    event.target.value=''
+    try{
+      if(!file.name.toLowerCase().endsWith('.json')||file.size>100000)throw new Error('Escolha um JSON de até 100 KB.')
+      const data:unknown=JSON.parse((await file.text()).replace(/^\uFEFF/,''))
+      if(!Array.isArray(data)||data.length<1||data.length>50)throw new Error('Informe uma lista com 1 a 50 simulações.')
+      const allowed=['id','createdAt','principal','rate','months']
+      const valid:Params[]=data.map((entry:unknown)=>{
+        if(!entry||typeof entry!=='object'||Array.isArray(entry))throw new Error('Registro inválido.')
+        const record=entry as Record<string,unknown>
+        if(Object.keys(record).some(key=>!allowed.includes(key)))throw new Error('O arquivo contém colunas não permitidas. Não importe dados pessoais.')
+        if(typeof record.principal!=='number'||typeof record.rate!=='number'||typeof record.months!=='number')throw new Error('Os registros devem conter apenas valores numéricos.')
+        const params:Params={principal:record.principal,rate:record.rate,months:record.months}
+        simulate(params)
+        return params
+      })
+      const existing=await listSaved()
+      if(existing.length+valid.length>50)throw new Error('Limite de 50 registros. Exclua alguns antes de importar.')
+      if(!window.confirm('Salvar '+valid.length+' cenário(s) numérico(s) neste navegador?'))return
+      for(const params of valid)await addSaved(params)
+      setRecords(await listSaved())
+      setToolMessage(valid.length+' simulação(ões) importada(s) localmente. Nenhum dado foi enviado.')
+    }catch(error){setToolMessage(error instanceof Error?error.message:'Falha ao importar JSON.')}
+  }
   async function readCSV(event:ChangeEvent<HTMLInputElement>){
     const file=event.target.files?.[0]
     if(!file)return
-    setCsvRows(0)
-    if(!file.name.toLowerCase().endsWith('.csv')||file.size>1000000){setToolMessage('Escolha um CSV com até 1 MB.');return}
-    const input=(await file.text()).replace(/^\ufeff/,'')
-    const rows=input.split(/\r?\n/).filter(Boolean)
-    if(!/^valor;taxa;prazo$/i.test(rows[0]?.trim()||'')){setToolMessage('Cabeçalho esperado: valor;taxa;prazo. Não importe dados pessoais.');return}
-    let valid=0
-    for(const line of rows.slice(1,501)){
-      const cells=line.split(';')
-      if(cells.length!==3)continue
-      try{simulate({principal:parseBR(cells[0]),rate:parseBR(cells[1])/100,months:Number(cells[2])});valid++}catch{ /* ignora linha inválida */ }
-    }
-    setCsvRows(valid)
-    setToolMessage(valid+' linha(s) numéricas validadas localmente. Nenhum dado enviado ou gravado.')
     event.target.value=''
+    setCsvRows(0);setCsvRejected(0);setCsvPreview([])
+    try{
+      if(!file.name.toLowerCase().endsWith('.csv')||file.size>1000000)throw new Error('Escolha um CSV com até 1 MB.')
+      const {items,rejected}=parseScenarioCSV(await file.text())
+      setCsvPreview(items)
+      setCsvRows(items.length)
+      setCsvRejected(rejected)
+      setToolMessage(items.length+' cenário(s) válido(s), '+rejected+' rejeitado(s). Processamento local, sem envio de dados.')
+    }catch(error){setToolMessage(error instanceof Error?error.message:'Falha ao ler CSV.')}
   }
   const current=routes.find(item=>item.id===route) ?? routes[0]
   const comparison = loan ? [Math.max(0,loan.rate-compareSpread/100),loan.rate,Math.min(1,loan.rate+compareSpread/100)].map(rate=>simulate({principal:loan.principal,months:loan.months,rate})) : []
@@ -155,9 +201,9 @@ export default function App() {
         </>}
         {route==='simuladores'&&<>
           <div className="page-heading"><span className="eyebrow">SIMULADOR PRICE</span><h1>Simulador de empréstimo</h1><p>Preencha os valores e veja a estimativa da prestação e da evolução da dívida.</p></div>
-          <div className="two-columns"><section className="panel"><h2>Parâmetros</h2><form onSubmit={onSimulate} className="form-grid"><TextField id="principal" label="Valor solicitado (R$)" value={principal} onChange={setPrincipal}/><TextField id="taxa" label="Taxa mensal (%)" value={rate} onChange={setRate}/><TextField id="prazo" label="Prazo (meses)" value={months} onChange={setMonths}/><button type="submit" className="primary">Calcular simulação</button></form><p role="status" className="status">{message}</p><button className="text-button" type="button" onClick={()=>{setPrincipal('15.000');setRate('1,80');setMonths('36');setMessage('Exemplo fictício preenchido.')}}>Preencher exemplo fictício</button></section>
-          <section className="panel accent-panel"><span className="eyebrow">RESULTADO ESTIMADO</span>{loan?<><span className="result-label">Prestação mensal</span><strong className="big-number">{brl(loan.payment)}</strong><div className="metric-grid"><Metric label="Total pago" value={brl(loan.total)}/><Metric label="Juros estimados" value={brl(loan.interest)}/><Metric label="Taxa anual efetiva" value={pct(loan.annualRate)}/><Metric label="Parcelas" value={String(loan.months)}/></div>
-          <div className="cost-composition"><div className="cost-title"><strong>Composição do pagamento</strong><span>Valor + juros</span></div><div className="cost-bar" role="img" aria-label={`Capital: ${pct(loan.principal/loan.total)}; juros: ${pct(loan.interest/loan.total)}`}><span style={{width:loan.principal/loan.total*100+'%'}}/></div><div className="cost-legend"><span><i className="legend-capital"/> Capital {pct(loan.principal/loan.total)}</span><span><i className="legend-interest"/> Juros {pct(loan.interest/loan.total)}</span></div></div>
+          <div className="two-columns"><section className="panel"><h2>Parâmetros</h2><form onSubmit={onSimulate} className="form-grid"><TextField id="principal" label="Valor solicitado (R$)" value={principal} onChange={v=>{setPrincipal(v);setDirty(true)}}/><TextField id="taxa" label="Taxa mensal (%)" value={rate} onChange={v=>{setRate(v);setDirty(true)}}/><TextField id="prazo" label="Prazo (meses)" value={months} onChange={v=>{setMonths(v);setDirty(true)}}/><button type="submit" className="primary">Calcular simulação</button></form><p role="status" className="status">{message}</p>{dirty&&<p className="unsaved-hint" role="status">Os valores foram alterados. Calcule novamente para atualizar os resultados.</p>}<button className="text-button" type="button" onClick={()=>{setPrincipal('15.000');setRate('1,80');setMonths('36');setDirty(true);setMessage('Exemplo fictício preenchido. Clique em calcular.')}}>Preencher exemplo fictício</button></section>
+          <section className={"panel accent-panel"+(dirty?" is-stale":"")}><span className="eyebrow">{dirty?"RESULTADO ANTERIOR":"RESULTADO ESTIMADO"}</span>{loan?<><span className="result-label">Prestação mensal</span><strong className="big-number">{brl(loan.payment)}</strong><div className="metric-grid"><Metric label="Total pago" value={brl(loan.total)}/><Metric label="Juros estimados" value={brl(loan.interest)}/><Metric label="Taxa anual efetiva" value={pct(loan.annualRate)}/><Metric label="Parcelas" value={String(loan.months)}/></div>
+          <div className="cost-composition"><div className="cost-title"><strong>Composição do pagamento</strong><span>Valor + juros</span></div><div className="cost-bar" role="img" aria-label={`Capital: ${pct(loan.principal/loan.total)}; juros: ${pct(loan.interest/loan.total)}`}><span style={{width:loan.principal/loan.total*100+'%'}}/></div><div className="cost-legend"><span><i className="legend-capital"/> Capital {pct(loan.principal/loan.total)}</span><span><i className="legend-interest"/> Juros {pct(loan.interest/loan.total)}</span></div></div><button className="secondary save-result" type="button" onClick={()=>void saveCurrent()} disabled={dirty}>Salvar no histórico local</button>
           </>:<p>Calcule para ver seus resultados.</p>}</section></div>
           {loan&&<section className="panel spaced"><div className="section-heading"><div><h2>Tabela de amortização</h2><p>Valores estimados e arredondados a centavos.</p></div><div className="actions"><button className="secondary" type="button" onClick={()=>download('simulacao-price.csv',csvFor(loan),'text/csv;charset=utf-8')}>Exportar CSV</button><button className="secondary" type="button" onClick={()=>window.print()}>Imprimir / PDF</button></div></div><p className="table-scroll-hint">Deslize a tabela horizontalmente para visualizar mais colunas →</p><div className="table-scroll"><table><thead><tr><th>Parcela</th><th>Prestação</th><th>Juros</th><th>Amortização</th><th>Saldo</th></tr></thead><tbody>{loan.schedule.slice(0,allRows?undefined:12).map(row=><tr key={row.index}><td>{row.index}</td><td>{brl(row.payment)}</td><td>{brl(row.interest)}</td><td>{brl(row.amortization)}</td><td>{brl(row.balance)}</td></tr>)}</tbody></table></div>{loan.months>12&&<button type="button" className="text-button" onClick={()=>setAllRows(v=>!v)}>{allRows?'Mostrar somente 12':'Mostrar todas as '+loan.months+' parcelas'}</button>}</section>}
         </>}
@@ -173,7 +219,32 @@ export default function App() {
         </>}
         {route==='ferramentas'&&<>
           <div className="page-heading"><span className="eyebrow">UTILITÁRIOS LOCAIS</span><h1>Ferramentas locais</h1><p>Guarde cenários genéricos e examine um CSV numérico. Não coloque informações de clientes neste aplicativo.</p></div>
-          <div className="two-columns"><section className="panel"><h2>Histórico opcional</h2><p>Dados numéricos salvos apenas no IndexedDB deste dispositivo; não há sincronização.</p><button className="primary" type="button" onClick={saveCurrent}>Salvar simulação atual</button><button className="secondary spaced-button" type="button" onClick={()=>download('historico-simulacoes.json',JSON.stringify(records,null,2),'application/json')}>Exportar histórico JSON</button><ul className="history-list">{records.map(item=><li key={item.id}><span>{brl(item.principal)} · {pct(item.rate)} a.m. · {item.months} meses</span><button className="text-button" type="button" onClick={()=>void erase(item.id)} aria-label={'Excluir simulação de '+brl(item.principal)}>Excluir</button></li>)}</ul>{records.length>0&&<button className="text-button danger" type="button" onClick={eraseAll}>Apagar todo o histórico</button>}</section><section className="panel"><h2>Validar planilha CSV</h2><p>Importação local de um CSV numérico com as colunas <code>valor;taxa;prazo</code>. Limite de 500 linhas, até 1 MB. Nenhum arquivo é enviado.</p><label className="field" htmlFor="csv"><span>Arquivo CSV sem dados pessoais</span><input id="csv" type="file" accept=".csv,text/csv" onChange={readCSV}/></label><button className="secondary spaced-button" type="button" onClick={()=>download('exemplo-simulacoes.csv','valor;taxa;prazo\n15000;1,8;36\n8000;2,0;24','text/csv;charset=utf-8')}>Baixar exemplo CSV</button><p>{csvRows} linha(s) válidas na última leitura.</p></section></div><p role="status" className="status">{toolMessage}</p>
+          <div className="two-columns">
+            <section className="panel">
+              <div className="tools-heading"><h2>Histórico opcional</h2><span className="counter-pill">{records.length}/50 registros</span></div>
+              <p>Salve e reutilize cenários numéricos neste navegador. Nenhum dado é sincronizado com um servidor.</p>
+              <div className="tool-actions">
+                <button className="primary" type="button" onClick={()=>void saveCurrent()} disabled={dirty}>Salvar simulação atual</button>
+                <button className="secondary" type="button" disabled={records.length===0} onClick={()=>download('historico-simulacoes.json',JSON.stringify(records,null,2),'application/json')}>Exportar JSON</button>
+              </div>
+              <label className="field import-field" htmlFor="json-historico"><span>Restaurar histórico de arquivo JSON</span><input id="json-historico" type="file" accept=".json,application/json" onChange={readJSON}/></label>
+              {records.length===0?<div className="empty-state"><strong>Nenhum cenário salvo ainda</strong><span>Salve uma simulação e ela aparecerá aqui para reutilização.</span></div>:
+                <ul className="history-list">{records.map(item=><li key={item.id}><div className="history-entry"><strong>{brl(item.principal)}</strong><span>{pct(item.rate)} a.m. · {item.months} meses</span></div><div className="history-actions"><button className="text-button" type="button" onClick={()=>restoreSaved(item)} aria-label={'Reutilizar simulação de '+brl(item.principal)}>Reutilizar</button><button className="text-button danger" type="button" onClick={()=>void erase(item.id)} aria-label={'Excluir simulação de '+brl(item.principal)}>Excluir</button></div></li>)}</ul>}
+              {records.length>0&&<button className="text-button danger" type="button" onClick={()=>void eraseAll()}>Apagar todo o histórico</button>}
+            </section>
+            <section className="panel">
+              <h2>Comparar cenários de um CSV</h2>
+              <p>Importe um arquivo com as colunas <code>valor;taxa;prazo</code>. Os cálculos são locais, sem nomes, CPF ou dados bancários. Até 500 linhas, máximo 1 MB.</p>
+              <label className="field" htmlFor="csv"><span>Selecionar CSV somente numérico</span><input id="csv" type="file" accept=".csv,text/csv" onChange={readCSV}/></label>
+              <button className="secondary spaced-button" type="button" onClick={()=>download('exemplo-simulacoes.csv','valor;taxa;prazo\n15000;1,8;36\n8000;2,0;24','text/csv;charset=utf-8')}>Baixar exemplo CSV</button>
+              <div className="csv-summary"><strong>{csvRows} cenário(s) validado(s)</strong><span>{csvRejected} linha(s) rejeitada(s)</span></div>
+              {csvPreview.length>0&&<>
+                <div className="csv-preview-head"><h3>Prévia dos resultados</h3><button type="button" className="text-button" onClick={()=>download('resultados-simulacoes.csv',exportScenarioResults(csvPreview),'text/csv;charset=utf-8')}>Exportar resultados CSV</button></div>
+                <div className="table-scroll"><table><thead><tr><th>Valor</th><th>Taxa mensal</th><th>Prazo</th><th>Parcela</th><th>Total</th></tr></thead><tbody>{csvPreview.slice(0,8).map((item,index)=><tr key={index}><td>{brl(item.principal)}</td><td>{pct(item.rate)}</td><td>{item.months} meses</td><td>{brl(item.payment)}</td><td>{brl(item.total)}</td></tr>)}</tbody></table></div>
+                {csvPreview.length>8&&<p>Exibindo 8 de {csvPreview.length} cenários. Exporte o CSV para ver todos os resultados.</p>}
+              </>}
+            </section>
+          </div><p role="status" className="status tool-feedback">{toolMessage}</p>
         </>}
         {route==='ajuda'&&<>
           <div className="page-heading"><span className="eyebrow">TRANSPARÊNCIA</span><h1>Ajuda e limites do simulador</h1><p>Entenda o que os números representam antes de tomar qualquer decisão financeira.</p></div>

@@ -14,10 +14,12 @@ function openDB(): Promise<IDBDatabase> {
 async function operation<T>(mode:IDBTransactionMode,method:(s:IDBObjectStore)=>IDBRequest<T>):Promise<T> {
   const db=await openDB()
   try {return await new Promise<T>((resolve,reject)=>{
-    const txn=db.transaction(STORE,mode),req=method(txn.objectStore(STORE))
-    req.onsuccess=()=>resolve(req.result)
+    const txn=db.transaction(STORE,mode)
+    const req=method(txn.objectStore(STORE))
+    txn.oncomplete=()=>resolve(req.result)
+    txn.onerror=()=>reject(txn.error ?? new Error('Falha no armazenamento local.'))
+    txn.onabort=()=>reject(txn.error ?? new Error('Operação de armazenamento interrompida.'))
     req.onerror=()=>reject(req.error)
-    txn.onerror=()=>reject(txn.error)
   })} finally{db.close()}
 }
 export async function listSaved():Promise<Saved[]> {

@@ -1,0 +1,44 @@
+/* UX iteration — local workflows, transparent calculation state and CSV preview. */
+.unsaved-hint{padding:12px 14px;margin:8px 0 12px!important;color:#d7e9f6!important;background:#263d4f;border:1px solid #6c92a7;border-radius:10px;font-size:12px!important;line-height:1.6}
+.accent-panel.is-stale{border-color:#93b0bf;background:linear-gradient(155deg,#25414c,#152b41)}
+.accent-panel.is-stale .eyebrow{color:#d6e5ef}
+.save-result{margin-top:22px;width:100%;max-width:285px}
+.tools-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.tools-heading h2{margin:0}
+.counter-pill{padding:6px 11px;border-radius:100px;border:1px solid #4c776f;background:#1e4847;color:#c8ffec;font-size:11px;font-weight:700;white-space:nowrap}
+.tool-actions{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0}
+.tool-actions button{flex:1 1 auto}
+.import-field{margin:18px 0}
+.field input[type=file]{padding:10px;border-style:dashed;min-height:54px;line-height:1.8}
+.field input[type=file]::file-selector-button{margin-right:12px;padding:7px 10px;color:#07352e;background:#92f4dd;border:0;border-radius:7px;font-weight:750;cursor:pointer}
+.field input[type=file]:hover{border-color:#96ead5}
+.empty-state{display:grid;gap:8px;padding:22px 19px;border:1px dashed #4a697d;border-radius:12px;background:#132a3e;color:#d5e8f1;line-height:1.65}
+.empty-state strong{font-size:13px}
+.empty-state span{font-size:12px;color:#b8cbd9}
+.history-list{display:grid;gap:8px;list-style:none;padding:0;margin:14px 0}
+.history-list li{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#192f43;border:1px solid #385368;border-radius:11px;padding:14px}
+.history-entry{display:grid;gap:5px;min-width:0}
+.history-entry strong{font-size:15px;color:#f2fcfc;line-height:1.3}
+.history-entry span{font-size:12px;color:#bed4e2}
+.history-actions{display:flex;gap:12px;flex-wrap:wrap}
+.history-actions button{white-space:nowrap;min-height:32px}
+.csv-summary{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 0;border-top:1px solid #355268;margin-top:9px}
+.csv-summary strong{font-size:13px;color:#ceffed}
+.csv-summary span{color:#c6d9e7;font-size:12px}
+.csv-preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:8px 0 12px}
+.csv-preview-head h3{font:750 14px/1.45 Manrope,system-ui,sans-serif;margin:0}
+.csv-preview-head button{padding:7px 0}
+.tool-feedback{padding:10px 4px;min-height:1.5em;color:#a4f5dc!important}
+@media(max-width:580px){
+ .history-list li{align-items:flex-start;flex-direction:column;gap:7px}
+ .history-actions{justify-content:flex-start;width:100%}
+ .history-actions button{min-height:36px}
+ .save-result{max-width:none}
+ .csv-preview-head{align-items:flex-start}
+ .tool-actions{display:grid}
+ .csv-summary{align-items:flex-start;flex-direction:column}
+}
+@media print{
+ .unsaved-hint,.save-result,.tool-actions,.import-field,.csv-preview-head button,.counter-pill,.history-actions{display:none!important}
+ .empty-state{border-color:#aaa;background:#fff;color:#111}
+}
