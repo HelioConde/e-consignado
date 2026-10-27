@@ -14,8 +14,9 @@ test('comparativo: slider muda taxas e diferença total',async({page})=>{
   await expect(label).toHaveText(/0,4 ponto/)
   const result=page.locator('.compare-insight strong')
   const initial=await result.textContent()
-  await page.locator('#taxa-variacao').fill('0.8')
-  await expect(label).toHaveText(/0,8 ponto/)
+  await page.locator('#taxa-variacao').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(label).toHaveText(/0,5 ponto/)
   await expect(result).not.toHaveText(initial||'')
 })
 
