@@ -39,3 +39,13 @@ Simulador matemático, não oferta de crédito. Não inclui CET, tarifas, seguro
 A versão PHP antiga foi substituída nesta árvore, mas permanece no histórico Git; qualquer credencial antiga deve ser imediatamente revogada e o histórico revisado. Referência para preservar o legado: commit 133d62d3d16d810a84d57289be8afad92232e72e.
 
 Documentação: docs/DESIGN_SYSTEM.md e docs/SECURITY_AUDIT.md.
+
+## Fluxos de trabalho da versão 3.2
+
+- O simulador mostra quando os campos foram alterados e identifica como **resultado anterior** os cálculos ainda não atualizados.
+- Depois de calcular, o usuário pode salvar o cenário diretamente. Em Ferramentas, consegue **reutilizar** ou excluir cada simulação.
+- Histórico limitado a **50 cenários exclusivamente numéricos** no IndexedDB, com exportação e restauração por JSON. Campos não reconhecidos, como CPF e nome, são recusados na importação.
+- CSV exclusivamente numérico com esquema \`valor;taxa;prazo\`. Exibe até oito resultados na tela e permite exportar **todos os resultados válidos** (limite de 500).
+- O arquivo é processado no navegador; não é transmitido a servidores.
+
+Os valores exibidos são **educativos**, calculados pela Tabela Price e não incluem CET, encargos ou condições oficiais de bancos. Em propostas reais, consulte o contrato e a instituição.
