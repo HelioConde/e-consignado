@@ -4,6 +4,7 @@ import App from './App'
 import './styles.css'
 import './polish.css'
 import './workflows.css'
+import './navbar.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Elemento principal ausente')
