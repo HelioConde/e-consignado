@@ -1,48 +1,41 @@
-<div align="center">
-  <h1>💼 e-Consignado</h1>
-  <p><strong>Experimento histórico de portal PHP com simulações e ferramentas relacionadas a empréstimo consignado.</strong></p>
-  <p><img alt="PHP" src="https://img.shields.io/badge/PHP-Aplica%C3%A7%C3%A3o-777BB4?logo=php&logoColor=white"> <img alt="Status" src="https://img.shields.io/badge/status-legado%20n%C3%A3o%20auditado-64748b"></p>
-</div>
+# e-Consignado
 
-## Visão do projeto
+Laboratório de **simulações financeiras educativas** para GitHub Pages, feito com React, TypeScript e Vite. Funciona sem PHP, MySQL, login ou backend. Não representa banco, instituição financeira nem oferta real de crédito.
 
-O repositório registra uma antiga experiência de desenvolvimento de telas, navegação, cadastros e consultas relacionadas ao universo de **crédito consignado**. Contém páginas PHP e dados de demonstração usados durante a construção.
+## Funcionalidades
 
-**Não é uma plataforma financeira em produção, simulador regulamentado ou produto de aconselhamento de crédito.** Os cálculos e regras não foram revalidados contra legislação, instituições ou taxas atuais.
+- Cálculo Price de prestação, juros, total e amortização.
+- Cálculo inverso da taxa mensal implícita e saldo devedor teórico.
+- Comparação de três cenários ilustrativos.
+- Histórico opcional e apenas numérico em IndexedDB, sem dados pessoais.
+- Validação local de CSV sem dados pessoais; exportação CSV, JSON e impressão/PDF.
+- Navegação acessível e layout responsivo em celular, tablet e desktop.
+- Playwright com 36 capturas de página inteira, auditoria de JavaScript, HTTP e overflow.
 
-## Prévia das telas
+## Rodar
 
-| Entrada | Simulação | Consulta |
-| --- | --- | --- |
-| ![Página de entrada](img/index.png) | ![Tela de simulação](img/index2.png) | ![Tela auxiliar](img/index3.png) |
+Requer Node 22+.
 
-## Tecnologias e estrutura
+    npm install
+    npm run dev
 
-- **PHP** para as páginas e rotinas de servidor.
-- **HTML/CSS/JavaScript** para interface e navegação.
-- Arquivos de configuração e banco no código legado.
-- Imagens e demais assets em `img/`, `css/` e `js/`.
+## Testar e compilar
 
-Arquivos como `index.php`, `acesso.php`, `config.php`, `database.php` e outras rotinas `.php` fazem parte do estudo.
+    npm test
+    npm run build
+    npx playwright install chromium
+    npm run test:e2e
 
-## Executar para estudo
+## GitHub Pages
 
-Utilize um ambiente **local isolado**, PHP compatível e um banco de testes quando necessário.
+Em Settings > Pages, selecione GitHub Actions. A publicação da branch main executa testes, build e Playwright antes de enviar somente dist/ ao Pages. Endereço: https://helioconde.github.io/e-consignado/.
 
-```bash
-git clone https://github.com/HelioConde/e-consignado.git
-cd e-consignado
-php -S 127.0.0.1:8000
-```
+O workflow de pull request guarda imagens e diagnósticos como artifacts em Actions. Capturas não são enviadas para a página pública.
 
-Acesse `http://127.0.0.1:8000`. **Algumas páginas podem exigir dependências, sessões ou configurações históricas não reproduzidas aqui.**
+## Segurança e limites
 
-## Antes de qualquer uso real
+Simulador matemático, não oferta de crédito. Não inclui CET, tarifas, seguros, impostos nem particularidades contratuais. Nunca informe CPF, nome, telefone, contratos ou dados bancários reais. Nenhuma taxa apresentada é atribuída a um banco.
 
-- Revise os arquivos de configuração para identificar **senhas, chaves ou dados históricos** e substitua/revogue o que for necessário.
-- Valide autenticação, autorização, sessões, consultas SQL, entradas e saída HTML.
-- Não processe CPFs, contratos, dados bancários ou informações de consumidores.
-- Documente as regras financeiras com fontes atuais e revise com profissional habilitado antes de oferecer qualquer cálculo ao público.
-- Adicione testes e mantenha a aplicação indisponível na internet até passar por auditoria.
+A versão PHP antiga foi substituída nesta árvore, mas permanece no histórico Git; qualquer credencial antiga deve ser imediatamente revogada e o histórico revisado. Referência para preservar o legado: commit 133d62d3d16d810a84d57289be8afad92232e72e.
 
-**Status:** preservado como aprendizado técnico. Desenvolvido por [Hélio Conde](https://github.com/HelioConde).
+Documentação: docs/DESIGN_SYSTEM.md e docs/SECURITY_AUDIT.md.
